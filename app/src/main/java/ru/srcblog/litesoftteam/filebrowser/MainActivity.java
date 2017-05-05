@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(main,jFileBrowser.class);
-                i.putExtra("mode", jFileBrowser.MODE_SAVE);
+                i.putExtra("mode", jFileBrowser.MODE_OPEN);
                 //i.putExtra("filter","rc");
                 startActivityForResult(i,ANSWER_BROWSER);
             }

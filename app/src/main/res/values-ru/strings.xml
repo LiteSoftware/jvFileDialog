@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="file_dialog_button_save">Сохранить</string>
+    <string name="file_dialog_check_path">Проверьте корректность введённого пути</string>
+    <string name="file_dialog_file_save_title">Введите имя</string>
+    <string name="file_dialog_no_dir">Директория не найдена</string>
+    <string name="file_dialog_ok">Принять</string>
+</resources>

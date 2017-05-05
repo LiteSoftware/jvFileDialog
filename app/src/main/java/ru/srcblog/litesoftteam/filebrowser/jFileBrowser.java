@@ -38,6 +38,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class jFileBrowser extends Activity implements AdapterView.OnItemClickListener,AdapterView.OnItemLongClickListener,View.OnClickListener{
 
@@ -100,12 +102,13 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
                 } else
                 {
                     // TODO Локализировать текст
+                    // TODO Изменить иконку
                     AlertDialog.Builder builder = new AlertDialog.Builder(main);
-                    builder.setTitle("Folder is not found!")
-                            .setMessage("Проверте правильность пути!")
+                    builder.setTitle(R.string.file_dialog_no_dir)
+                            .setMessage(R.string.file_dialog_check_path)
                             .setCancelable(true)
                             .setIcon(R.mipmap.ic_launcher_round)
-                            .setPositiveButton("Okey", new android.content.DialogInterface.OnClickListener() {
+                            .setPositiveButton(R.string.file_dialog_ok, new android.content.DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(android.content.DialogInterface dialog, int which) {
                                     if(errorAlert != null)
@@ -114,7 +117,6 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
                             });
                     errorAlert = builder.show();
 
-                    //editPath.setText(path);
                 }
             }
         });
@@ -127,14 +129,14 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
     }
 
     public static String[] listRoot(String filter) {
-        return native_list(ROOT_DIR,filter);
+        return native_list(ROOT_DIR,filter,false);
     }
 
     public static String[] list(String path,String filter)
     {
         ArrayList<String> list = new ArrayList<>();
         list.add("...");
-        String[] arr = native_list(path,filter);
+        String[] arr = native_list(path,filter,false);
         if(arr != null) {
             for (String text : arr)
                 list.add(text);
@@ -145,7 +147,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
         return arr;
     }
 
-    private static String[] native_list(String path, final String filter)
+    private static String[] native_list(String path, final String filter,boolean sort)
     {
         File fRoot = new File(path);
         final FilenameFilter fileFilter = new FilenameFilter() {
@@ -161,8 +163,9 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
             }
         };
         String[] arr = fRoot.list(fileFilter);
-        if(arr != null)
-            Arrays.sort(arr,0,arr.length); // Сортируем для удобного отображения
+        if(arr != null && sort) {
+            Arrays.sort(arr, 0, arr.length); // Сортируем для удобного отображения
+        }
         return arr;
     }
 
@@ -205,21 +208,37 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
         refreshList(arr);
     }
 
+    /**
+     * Обновляет список файлов
+     * @param arr Массив в котором находятся файлы и директории
+     */
     public void refreshList(String[] arr)
     {
         EditText editPath = (EditText) main.findViewById(R.id.path_edit);
         editPath.setText(path);
+
         adapter.clear();
+        adapter.notifyDataSetChanged();
+
         for(int i = 0; i < arr.length; i++) {
             ElementOfGrid element = new ElementOfGrid();
             element.title = arr[i];
             File f = new File(path + '/' + arr[i]);
-            element.isDir = f.isDirectory();
+            element.isDir = element.title.equals("...") ? false : f.isDirectory();
             adapter.add(element);
         }
-        adapter.notifyDataSetChanged();
+        adapter.sort(true); // сортируем с учетом папок
+        adapter.notifyDataSetChanged(); // принимаем изменения в списке
     }
 
+    /**
+     * Нужен для мультивыбора файлов
+     * @param parent
+     * @param view
+     * @param position
+     * @param id
+     * @return всегда false
+     */
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         return false;
@@ -229,8 +248,8 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
     public void onClick(View v) {
         if(v.getId() == R.id.save_button)
         {
-
-            createDialog("Enter file name", new DialogInterface() {
+            // TODO локализировать
+            createDialog(getString(R.string.file_dialog_button_save), new DialogInterface() {
                 @Override
                 public void callbackDialog(Dialog sender,boolean accept, String fileName) {
                     if(accept)
@@ -281,15 +300,20 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
         d.findViewById(R.id.dialog_file_save_save_button).setOnClickListener(listener1);
         return d;
     }
+
 }
 
 class MyAdapter extends BaseAdapter
 {
     Context c;
+    LayoutInflater inflater;
     ArrayList<ElementOfGrid> list;
 
     public MyAdapter(Context context) {
         c = context;
+
+        inflater = (LayoutInflater) c
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         list = new ArrayList<>();
     }
 
@@ -312,6 +336,49 @@ class MyAdapter extends BaseAdapter
         return list.add(obj);
     }
 
+    public void add(int index, ElementOfGrid obj) {
+        list.add(index,obj);
+    }
+
+    public  void sort(boolean dirUp)
+    {
+        if(dirUp)
+        {
+            ArrayList<ElementOfGrid> listDir = new ArrayList<>();
+            ArrayList<ElementOfGrid> listFile = new ArrayList<>();
+            for(ElementOfGrid item : list)
+            {
+                if(item.isDir)
+                    listDir.add(item);
+                else {
+                    if (item.title.equals("..."))
+                        return;
+                    listFile.add(item);
+                }
+            }
+            sort(listDir);
+            sort(listFile);
+
+            boolean flag = list.get(0).title.equals("...");
+            list.removeAll(list);
+            if(flag)
+                list.add(new ElementOfGrid("...",false));
+            list.addAll(listDir);
+            list.addAll(listFile);
+        }else
+            sort(list);
+    }
+
+    private void sort(ArrayList<ElementOfGrid> list)
+    {
+        Collections.sort(list, new Comparator<ElementOfGrid>() {
+            @Override
+            public int compare(ElementOfGrid o1, ElementOfGrid o2) {
+                return o1.title.compareTo(o2.title);
+            }
+        });
+    }
+
     public void clear()
     {
         list.clear();
@@ -321,13 +388,10 @@ class MyAdapter extends BaseAdapter
     public View getView(int position, View convertView, ViewGroup parent)
     {
         ElementOfGrid element = getItem(position);
-        if(convertView == null)
-        {
-            LayoutInflater inflater = (LayoutInflater) c
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-            convertView = inflater.inflate(R.layout.element_of_grid, parent, false);
-        }
+        //if(convertView == null)
+        //{
+        convertView = inflater.inflate(R.layout.element_of_grid, parent, false);
+        //} - если расскоментировать грид при скролле будет отображаться не правильно
         TextView tv = (TextView) convertView.findViewById(R.id.element_of_grid_title);
         tv.setText(element.title);
         ImageView preview = (ImageView) convertView.findViewById(R.id.element_of_grid_preview);
@@ -339,6 +403,7 @@ class MyAdapter extends BaseAdapter
             preview.setImageResource(R.mipmap.file);
         return convertView;
     }
+
 }
 
 interface DialogInterface

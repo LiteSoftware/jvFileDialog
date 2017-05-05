@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">FileBrowser</string>
+    <string name="app_name" translatable="false">FileBrowser</string>
+    <string name="file_dialog_button_save">Save here</string>
+    <string name="file_dialog_no_dir">Folder is not found!</string>
+    <string name="file_dialog_check_path">Check the correctness of the path!</string>
+    <string name="file_dialog_ok">Okey</string>
+    <string name="file_dialog_file_save_title">Enter file name</string>
 </resources>
