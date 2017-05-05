@@ -1,6 +1,6 @@
 # jvFileDialog
 
-[Домашняя страница] (http://srcblog.ru)
+[>HOME<](http://srcblog.ru "javavirys")
 
 ### *ENG*
 
