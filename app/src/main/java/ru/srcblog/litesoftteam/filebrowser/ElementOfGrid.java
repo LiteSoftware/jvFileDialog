@@ -19,7 +19,6 @@ package ru.srcblog.litesoftteam.filebrowser;
 
 /**
  * Created by javavirys on 01.05.2017.
- * jv ava
  */
 
 public class ElementOfGrid {
