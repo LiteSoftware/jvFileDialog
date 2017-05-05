@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="FileDialogTheme" parent="@android:style/Theme.Holo.Dialog.NoActionBar">
+        <!-- Customize your theme here. -->
+
+    </style>
+
+</resources>
