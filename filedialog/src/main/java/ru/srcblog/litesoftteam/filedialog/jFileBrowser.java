@@ -101,7 +101,6 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
                     jumpToDir();
                 } else
                 {
-                    // TODO Локализировать текст
                     // TODO Изменить иконку
                     AlertDialog.Builder builder = new AlertDialog.Builder(main);
                     builder.setTitle(R.string.file_dialog_no_dir)
@@ -265,7 +264,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
     public void sendPath(String fileName)
     {
         Intent i = new Intent();
-        i.putExtra("file",(path.endsWith("/") ? "" : '/') + fileName);
+        i.putExtra("file",path + (path.endsWith("/") ? "" : '/') + fileName);
         setResult(RESULT_OK,i);
         finish();
     }
