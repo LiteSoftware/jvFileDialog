@@ -14,7 +14,7 @@
         limitations under the License.
  */
 
-package ru.srcblog.litesoftteam.filebrowser;
+package ru.srcblog.litesoftteam.filedialog;
 
 
 /**

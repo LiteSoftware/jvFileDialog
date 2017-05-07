@@ -14,7 +14,7 @@
         limitations under the License.
  */
 
-package ru.srcblog.litesoftteam.filebrowser;
+package ru.srcblog.litesoftteam.filedialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -264,7 +264,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
 
     public void sendPath(String fileName)
     {
-        Intent i = new Intent(this,MainActivity.class);
+        Intent i = new Intent();
         i.putExtra("file",(path.endsWith("/") ? "" : '/') + fileName);
         setResult(RESULT_OK,i);
         finish();
@@ -282,13 +282,11 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
             public void onClick(View v) {
                 boolean flag;
                 String fileName;
-                switch (v.getId())
+                if(v.getId() == R.id.dialog_file_save_button) {
+                    flag = true;
+                    fileName = edit.getText().toString();
+                }else
                 {
-                    case R.id.dialog_file_save_save_button:
-                        flag = true;
-                        fileName = edit.getText().toString();
-                        break;
-                    default:
                         flag = false;
                         fileName = null;
                 }
@@ -297,7 +295,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
             }
         };
         d.findViewById(R.id.dialog_file_save_cancel_button).setOnClickListener(listener1);
-        d.findViewById(R.id.dialog_file_save_save_button).setOnClickListener(listener1);
+        d.findViewById(R.id.dialog_file_save_button).setOnClickListener(listener1);
         return d;
     }
 
@@ -408,6 +406,6 @@ class MyAdapter extends BaseAdapter
 
 interface DialogInterface
 {
-    void callbackDialog(Dialog sender,boolean accept,String fileName);
+    void callbackDialog(Dialog sender, boolean accept, String fileName);
 }
 
