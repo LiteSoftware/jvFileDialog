@@ -46,6 +46,8 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
     public static final int MODE_OPEN = 111;
     public static final int MODE_SAVE = 112;
 
+    public static final String FILTER_ONLY_DIRS = "only_dirs";
+
     private static String ROOT_DIR = "/";
 
     private jFileBrowser main;
@@ -54,7 +56,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
     MyAdapter adapter = null;
 
     private int mode = 0; // диалог открытия или сохранения файла см. константы MODE_*
-    private String sFilter = null;
+    private String sFilter = null; // фильтр доп. смотри константы FILTER_*
 
     private AlertDialog errorAlert = null;
 
@@ -69,6 +71,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
         {
             mode = intent.getIntExtra("mode",0);
             sFilter = intent.getStringExtra("filter");
+
         }
 
         setContentView(R.layout.activity_j_file_browser);
@@ -152,7 +155,7 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
         final FilenameFilter fileFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                System.out.println("Dir: " + dir.getAbsolutePath() + " name: "+ name);
+                //System.out.println("Dir: " + dir.getAbsolutePath() + " name: "+ name);
                 if(filter == null)
                     return true;
                 else if(name.equalsIgnoreCase(filter) || (new File(dir,name)).isDirectory())
@@ -217,7 +220,6 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
         editPath.setText(path);
 
         adapter.clear();
-        adapter.notifyDataSetChanged();
 
         for(int i = 0; i < arr.length; i++) {
             ElementOfGrid element = new ElementOfGrid();
@@ -247,7 +249,10 @@ public class jFileBrowser extends Activity implements AdapterView.OnItemClickLis
     public void onClick(View v) {
         if(v.getId() == R.id.save_button)
         {
-            // TODO локализировать
+            if(sFilter != null && sFilter.equals(FILTER_ONLY_DIRS)) {
+                sendPath("");
+                return;
+            }
             createDialog(getString(R.string.file_dialog_button_save), new DialogInterface() {
                 @Override
                 public void callbackDialog(Dialog sender,boolean accept, String fileName) {
@@ -349,7 +354,7 @@ class MyAdapter extends BaseAdapter
                     listDir.add(item);
                 else {
                     if (item.title.equals("..."))
-                        return;
+                        continue;
                     listFile.add(item);
                 }
             }
@@ -360,6 +365,7 @@ class MyAdapter extends BaseAdapter
             list.removeAll(list);
             if(flag)
                 list.add(new ElementOfGrid("...",false));
+
             list.addAll(listDir);
             list.addAll(listFile);
         }else
@@ -385,16 +391,17 @@ class MyAdapter extends BaseAdapter
     public View getView(int position, View convertView, ViewGroup parent)
     {
         ElementOfGrid element = getItem(position);
-        //if(convertView == null)
-        //{
-        convertView = inflater.inflate(R.layout.element_of_grid, parent, false);
-        //} - если расскоментировать грид при скролле будет отображаться не правильно
+        if(convertView == null)
+        {
+            convertView = inflater.inflate(R.layout.element_of_grid, parent, false);
+        }// - если расскоментировать грид при скролле будет отображаться не правильно
         TextView tv = (TextView) convertView.findViewById(R.id.element_of_grid_title);
         tv.setText(element.title);
         ImageView preview = (ImageView) convertView.findViewById(R.id.element_of_grid_preview);
-        if(element.title.equals("..."))
-            preview.setVisibility(View.GONE);
-        else if(element.isDir)
+        if(element.title.equals("...")) {
+            preview.setImageResource(R.mipmap.back);
+            //preview.setVisibility(View.GONE);
+        } else if(element.isDir)
             preview.setImageResource(R.mipmap.folder);
         else if(!element.isDir)
             preview.setImageResource(R.mipmap.file);
